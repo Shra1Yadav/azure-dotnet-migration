@@ -27,13 +27,13 @@ jobs:
         run: |
           # Download and install the latest Visual Studio Test Platform
           $url = "https://aka.ms/vs/17/release/vstest.exe"
-          $output = "C:\tools\vstest.exe"
+          $output = "C:\Program Files\Microsoft Visual Studio\vstest.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
 
       - name: Check vstest.exe
         run: |
-          if (Test-Path "C:\tools\vstest.exe") {
-            Write-Host "vstest.exe is located at C:\tools\vstest.exe"
+          if (Test-Path "C:\Program Files\Microsoft Visual Studio\vstest.exe") {
+            Write-Host "vstest.exe is located at C:\Program Files\Microsoft Visual Studio\vstest.exe"
           } else {
             Write-Host "vstest.exe not found."
             exit 1
@@ -44,11 +44,14 @@ jobs:
           echo "Running TestComplete with executor: ${{ env.EXECUTION_TYPE }}"
           # Add commands to install and configure TestComplete here
 
+      - name: Sleep for a moment
+        run: Start-Sleep -Seconds 5  # Optional, but can help with access issues
+
       - name: Run TestComplete Tests
         run: |
           echo "Running tests with filter: ${{ env.TEST_NAME }}"
           $testFiles = Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.pjs" -Recurse | Select-Object -ExpandProperty FullName
-          & "C:\tools\vstest.exe" $testFiles --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
+          & "C:\Program Files\Microsoft Visual Studio\vstest.exe" $testFiles --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
         shell: pwsh
         working-directory: ${{ github.workspace }}
 
