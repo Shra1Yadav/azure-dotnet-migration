@@ -30,17 +30,27 @@ jobs:
           $output = "C:\tools\vstest.exe"
           Invoke-WebRequest -Uri $url -OutFile $output
 
+      - name: Check vstest.exe
+        run: |
+          if (Test-Path "C:\tools\vstest.exe") {
+            Write-Host "vstest.exe is located at C:\tools\vstest.exe"
+          } else {
+            Write-Host "vstest.exe not found."
+            exit 1
+          }
+
       - name: Install TestComplete Adapter
         run: |
           echo "Running TestComplete with executor: ${{ env.EXECUTION_TYPE }}"
           # Add commands to install and configure TestComplete here
-          # Example: Install TestComplete using a command line installer or similar
 
       - name: Run TestComplete Tests
         run: |
           echo "Running tests with filter: ${{ env.TEST_NAME }}"
-          & "C:\tools\vstest.exe" **\*.pjs --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
+          $testFiles = Get-ChildItem -Path "${{ github.workspace }}" -Filter "*.pjs" -Recurse | Select-Object -ExpandProperty FullName
+          & "C:\tools\vstest.exe" $testFiles --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
         shell: pwsh
+        working-directory: ${{ github.workspace }}
 
       - name: Clean Test Results Directory
         run: |
