@@ -23,21 +23,23 @@ jobs:
         with:
           dotnet-version: '8.0.x'  # Latest .NET 8 LTS version
 
-      - name: Install Test Platform Tool
-        run: dotnet tool install --global Microsoft.TestPlatform.Tool
-
-      - name: Add .NET tools to PATH
-        run: echo "${{ runner.tool_cache }}/dotnet-tools" >> $GITHUB_PATH
+      - name: Install Visual Studio Test Platform
+        run: |
+          # Download and install the latest Visual Studio Test Platform
+          $url = "https://aka.ms/vs/17/release/vstest.exe"
+          $output = "C:\tools\vstest.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
 
       - name: Install TestComplete Adapter
         run: |
           echo "Running TestComplete with executor: ${{ env.EXECUTION_TYPE }}"
           # Add commands to install and configure TestComplete here
+          # Example: Install TestComplete using a command line installer or similar
 
       - name: Run TestComplete Tests
         run: |
           echo "Running tests with filter: ${{ env.TEST_NAME }}"
-          vstest.console.exe **\*.pjs --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
+          & "C:\tools\vstest.exe" **\*.pjs --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
         shell: pwsh
 
       - name: Clean Test Results Directory
