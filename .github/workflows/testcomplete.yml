@@ -1,0 +1,60 @@
+name: TestComplete Automation
+
+on:
+  workflow_dispatch: # Triggers manually or on specific events
+
+env:
+  TEST_NAME: Group=Group1
+  EXECUTION_TYPE: TC
+  TEST_RESULTS_DIR: ${{ github.workspace }}\test-results
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  TestComplete:
+    runs-on: windows-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'  # Latest .NET 8 LTS version
+
+      - name: Install Test Platform Tool
+        run: dotnet tool install --global Microsoft.TestPlatform.Tool
+
+      - name: Add .NET tools to PATH
+        run: echo "${{ runner.tool_cache }}/dotnet-tools" >> $GITHUB_PATH
+
+      - name: Install TestComplete Adapter
+        run: |
+          echo "Running TestComplete with executor: ${{ env.EXECUTION_TYPE }}"
+          # Add commands to install and configure TestComplete here
+
+      - name: Run TestComplete Tests
+        run: |
+          echo "Running tests with filter: ${{ env.TEST_NAME }}"
+          vstest.console.exe **\*.pjs --TestCaseFilter:${{ env.TEST_NAME }} || exit 1
+        shell: pwsh
+
+      - name: Clean Test Results Directory
+        run: |
+          if (Test-Path ${{ env.TEST_RESULTS_DIR }}) {
+            Remove-Item -Recurse -Force ${{ env.TEST_RESULTS_DIR }}\*
+          }
+        shell: pwsh
+
+      - name: Copy Test Results
+        run: |
+          New-Item -ItemType Directory -Path ${{ env.TEST_RESULTS_DIR }} -Force
+          Copy-Item TestResults\*.mht ${{ env.TEST_RESULTS_DIR }} -Force
+        shell: pwsh
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test Report
+          path: ${{ env.TEST_RESULTS_DIR }}
