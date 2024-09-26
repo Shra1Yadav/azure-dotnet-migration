@@ -2,6 +2,7 @@ name: TestComplete Automation
 
 on:
   workflow_dispatch: # Triggers manually or on specific events
+  # This is to check the workflow
 
 env:
   TEST_NAME: Group=Group1
